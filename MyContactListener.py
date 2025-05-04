@@ -15,7 +15,6 @@ class MyContactListener(b2ContactListener):
         bodyA = fixtureA.body
         bodyB = fixtureB.body
 
-        # Check if one of the fixtures is the ring and the other is the ball
         from Ring import Ring
         from Ball import Ball
         if (isinstance(bodyA.userData,Ring) and isinstance(bodyB.userData,Ball))\

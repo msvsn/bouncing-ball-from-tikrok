@@ -14,12 +14,10 @@ class Ring:
         self.radius = radius
         self.rotateDir = rotateDir
         
-        # Використовуємо 360 вершин для створення плавного кола
         self.size = 360
         
-        # Один отвір з випадковою позицією
-        self.holeSize = random.randint(9, 12)  # Розмір отвору (в градусах)
-        self.holePosition = random.randint(0, self.size-1)  # Випадкова позиція отвору
+        self.holeSize = random.randint(9, 12) 
+        self.holePosition = random.randint(0, self.size-1) 
         
         self.vertices = []
         for i in range(self.size):
@@ -36,18 +34,14 @@ class Ring:
 
 
     def create_edge_shape(self):
-        # Створюємо краї кола з одним отвором
         for i in range(self.size):
-            # Визначаємо зону отвору
             holeStart = (self.holePosition - self.holeSize) % self.size
             holeEnd = (self.holePosition + self.holeSize) % self.size
             
-            # Перевіряємо, чи поточна вершина знаходиться поза зоною отвору
             skipEdge = False
             if holeStart < holeEnd:
                 if holeStart <= i <= holeEnd:
                     skipEdge = True
-            else:  # Отвір перекриває кінець/початок кола
                 if i >= holeStart or i <= holeEnd:
                     skipEdge = True
             
