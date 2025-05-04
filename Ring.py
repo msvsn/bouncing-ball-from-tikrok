@@ -9,12 +9,18 @@ from utils import utils
 
 
 class Ring:
-    def __init__(self, pos, radius,rotateDir,size):
+    def __init__(self, pos, radius, rotateDir):
         self.color = (255,255,255)
         self.radius = radius
-
         self.rotateDir = rotateDir
-        self.size = size
+        
+        # Використовуємо 360 вершин для створення плавного кола
+        self.size = 360
+        
+        # Один отвір з випадковою позицією
+        self.holeSize = random.randint(9, 12)  # Розмір отвору (в градусах)
+        self.holePosition = random.randint(0, self.size-1)  # Випадкова позиція отвору
+        
         self.vertices = []
         for i in range(self.size):
             angle = i * (2 * math.pi / self.size)
@@ -30,35 +36,26 @@ class Ring:
 
 
     def create_edge_shape(self):
-        if self.size == 360:
-            for i in range(self.size):
-                angle = i * (360 / self.size)
-                if (0 <= angle <= 340) :
-                    v1 = self.vertices[i]
-                    v2 = self.vertices[(i + 1) % self.size]
-                    edge = b2EdgeShape(vertices=[v1, v2])
-                    self.body.CreateEdgeFixture(shape=edge, density=1, friction=0.0, restitution=1.0)
-        if self.size == 3 or self.size == 4:
-            for i in range(self.size):
-                if i == 0:
-                    holeSize = 4
-                    v1 = Vector2(self.vertices[i])
-                    v2 = Vector2(self.vertices[(i + 1) % self.size])
-                    length = (v2 - v1).length()
-                    dir = (v2 - v1).normalize()
-                    mV1 = v1 + dir * (length / 2 - holeSize)
-                    mV2 = v1 + dir * (length / 2 + holeSize)
-
-                    edge = b2EdgeShape(vertices=[v1, mV1])
-                    self.body.CreateEdgeFixture(shape=edge, density=1, friction=0.0, restitution=1.0)
-
-                    edge = b2EdgeShape(vertices=[mV2, v2])
-                    self.body.CreateEdgeFixture(shape=edge, density=1, friction=0.0, restitution=1.0)
-                else:
-                    v1 = self.vertices[i]
-                    v2 = self.vertices[(i + 1) % self.size]
-                    edge = b2EdgeShape(vertices=[v1, v2])
-                    self.body.CreateEdgeFixture(shape=edge, density=1, friction=0.0, restitution=1.0)
+        # Створюємо краї кола з одним отвором
+        for i in range(self.size):
+            # Визначаємо зону отвору
+            holeStart = (self.holePosition - self.holeSize) % self.size
+            holeEnd = (self.holePosition + self.holeSize) % self.size
+            
+            # Перевіряємо, чи поточна вершина знаходиться поза зоною отвору
+            skipEdge = False
+            if holeStart < holeEnd:
+                if holeStart <= i <= holeEnd:
+                    skipEdge = True
+            else:  # Отвір перекриває кінець/початок кола
+                if i >= holeStart or i <= holeEnd:
+                    skipEdge = True
+            
+            if not skipEdge:
+                v1 = self.vertices[i]
+                v2 = self.vertices[(i + 1) % self.size]
+                edge = b2EdgeShape(vertices=[v1, v2])
+                self.body.CreateEdgeFixture(shape=edge, density=1, friction=0.0, restitution=1.0)
 
 
     def draw(self):
@@ -66,8 +63,6 @@ class Ring:
         self.color = utils.hueToRGB(self.hue)
 
         self.body.angle += self.rotateDir * utils.deltaTime()
-
-
         self.draw_edges()
 
     def draw_edges(self):
